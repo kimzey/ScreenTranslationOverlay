@@ -13,7 +13,12 @@
       "Bash(npm rebuild:*)",
       "Bash(npx electron-rebuild:*)",
       "Bash(npm run type-check:*)",
-      "Bash(if exist \"C:\\\\Users\\\\kimzeyx\\\\AppData\\\\Roaming\\\\screen-translation-overlay\\\\settings.json\" del \"C:\\\\Users\\\\kimzeyx\\\\AppData\\\\Roaming\\\\screen-translation-overlay\\\\settings.json\")"
+      "Bash(if exist \"C:\\\\Users\\\\kimzeyx\\\\AppData\\\\Roaming\\\\screen-translation-overlay\\\\settings.json\" del \"C:\\\\Users\\\\kimzeyx\\\\AppData\\\\Roaming\\\\screen-translation-overlay\\\\settings.json\")",
+      "Bash(dir:*)",
+      "Bash(curl:*)",
+      "Bash(npx eslint:*)",
+      "Bash(npm run build:*)",
+      "Bash(powershell:*)"
     ]
   }
 }

@@ -12,6 +12,7 @@ import { getHistoryDatabase } from './store/database'
 import { getWindowManager } from './windows/manager'
 import { getTrayManager } from './tray'
 import { getShortcutHandler } from './shortcuts'
+import { registerIpcHandlers, unregisterIpcHandlers } from './ipc-handlers'
 
 // Prevent multiple instances
 const gotTheLock = app.requestSingleInstanceLock()
@@ -76,6 +77,10 @@ app.on('activate', () => {
  */
 function initialize(): void {
   try {
+    // Register IPC handlers first
+    registerIpcHandlers()
+    logger.info('IPC handlers registered')
+
     // Initialize settings
     const settingsStore = getSettingsStore()
     logger.info('Settings loaded', { path: settingsStore.path })
@@ -107,8 +112,8 @@ function initialize(): void {
 
     logger.info('Application initialized successfully')
 
-    // Don't show main window on startup
-    // User can open it from tray menu
+    // Show main window on startup (especially in development or for first-time users)
+    windowManager.getOrCreateMainWindow()
   } catch (error) {
     logger.error('Failed to initialize application', error)
     app.quit()
@@ -120,6 +125,9 @@ function initialize(): void {
  */
 function cleanup(): void {
   try {
+    // Unregister IPC handlers
+    unregisterIpcHandlers()
+
     // Unregister shortcuts
     const shortcutHandler = getShortcutHandler()
     shortcutHandler.unregisterAll()

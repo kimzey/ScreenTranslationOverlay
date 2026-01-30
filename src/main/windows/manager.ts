@@ -41,7 +41,7 @@ export class WindowManager {
       show: false,
       autoHideMenuBar: true,
       webPreferences: {
-        preload: path.join(__dirname, '../../preload/index.js'),
+        preload: path.join(__dirname, '../preload/index.js'),
         nodeIntegration: false,
         contextIsolation: true,
         sandbox: true
@@ -107,7 +107,7 @@ export class WindowManager {
       resizable: false,
       show: false,
       webPreferences: {
-        preload: path.join(__dirname, '../../preload/index.js'),
+        preload: path.join(__dirname, '../preload/index.js'),
         nodeIntegration: false,
         contextIsolation: true,
         sandbox: true
@@ -173,7 +173,7 @@ export class WindowManager {
       movable: false,
       show: false,
       webPreferences: {
-        preload: path.join(__dirname, '../../preload/index.js'),
+        preload: path.join(__dirname, '../preload/index.js'),
         nodeIntegration: false,
         contextIsolation: true,
         sandbox: true
@@ -225,7 +225,7 @@ export class WindowManager {
       show: false,
       autoHideMenuBar: true,
       webPreferences: {
-        preload: path.join(__dirname, '../../preload/index.js'),
+        preload: path.join(__dirname, '../preload/index.js'),
         nodeIntegration: false,
         contextIsolation: true,
         sandbox: true

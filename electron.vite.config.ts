@@ -35,7 +35,7 @@ export default defineConfig({
     }
   },
   renderer: {
-    root: '.',
+    root: './ui',
     build: {
       rollupOptions: {
         input: {
