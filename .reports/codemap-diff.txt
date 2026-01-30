@@ -1,0 +1,72 @@
+Codemap Generation Report
+=========================
+Date: 2025-01-31
+Project: screen-translation-overlay v0.1.0
+
+STATUS: NEW CODEMAPS CREATED
+----------------------------
+
+Files Created:
+--------------
+- codemaps/INDEX.md         (Overview and navigation)
+- codemaps/architecture.md  (System architecture)
+- codemaps/backend.md       (Main process structure)
+- codemaps/frontend.md      (Renderer process structure)
+- codemaps/data.md          (Type definitions and schemas)
+
+Diff Calculation:
+-----------------
+Previous codemaps: NONE
+Diff: N/A (首次生成)
+
+Source Analysis:
+----------------
+Main Process (src/main/):
+  - index.ts              (Entry point, lifecycle)
+  - store/settings.ts     (SettingsStore, 214 lines)
+  - store/database.ts      (HistoryDatabase, 325 lines)
+  - windows/manager.ts     (WindowManager, 315 lines)
+  - tray.ts                (TrayManager, 209 lines)
+  - shortcuts.ts           (ShortcutHandler, 171 lines)
+  - services/capture.ts    (CaptureService, 312 lines)
+  - services/capture.test.ts
+
+Preload (src/renderer/preload/):
+  - index.ts               (Context bridge, 111 lines)
+
+Shared (src/shared/):
+  - types/*.ts             (settings, history, translation, ocr, capture, ipc)
+  - constants/*.ts         (languages, shortcuts)
+  - utils/logger.ts        (Logging utility)
+
+Renderer (ui/src/):
+  - main.tsx               (React entry)
+  - App.tsx                (Hash router)
+  - hooks/useSettings.ts   (Settings hook)
+  - hooks/useHash.ts       (Hash tracking)
+  - components/Settings/SettingsPanel.tsx
+  - components/Overlay/TranslationOverlay.tsx
+  - components/Selector/ScreenSelector.tsx
+  - components/History/HistoryPanel.tsx
+
+Key Observations:
+-----------------
+1. Phase 1 Complete: Foundation, windows, settings, history
+2. Phase 2 Complete: CaptureService with test coverage
+3. Pending: OCR service, Translation service, IPC handlers
+4. Architecture: Clean separation, singleton pattern for managers
+5. Type safety: Comprehensive TypeScript types in shared/
+
+Next Updates:
+-------------
+When implementing OCR service:
+  - Update codemaps/backend.md (add OcrService)
+  - Update codemaps/data.md (verify OcrResult types)
+
+When implementing Translation service:
+  - Update codemaps/backend.md (add TranslationService)
+  - Update codemaps/data.md (verify TranslationResult types)
+
+When IPC handlers are wired:
+  - Update codemaps/architecture.md (IPC flow)
+  - Update codemaps/backend.md (IPC handlers list)

@@ -4,6 +4,11 @@ import path from 'path'
 
 export default defineConfig({
   main: {
+    build: {
+      rollupOptions: {
+        external: ['better-sqlite3']
+      }
+    },
     resolve: {
       alias: {
         '@': path.resolve(__dirname, 'src'),
@@ -13,6 +18,14 @@ export default defineConfig({
     }
   },
   preload: {
+    build: {
+      lib: {
+        entry: {
+          index: path.resolve(__dirname, 'src/renderer/preload/index.ts')
+        },
+        formats: ['cjs']
+      }
+    },
     resolve: {
       alias: {
         '@': path.resolve(__dirname, 'src'),

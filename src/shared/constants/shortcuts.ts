@@ -4,8 +4,8 @@
 
 export const DEFAULT_SHORTCUTS = {
   CAPTURE: 'CommandOrControl+Shift+X',
- _HIDE_OVERLAY: 'CommandOrControl+Shift+H',
-  SHOW_HISTORY: 'CommandOrControl+Shift+H',
+  HIDE_OVERLAY: 'CommandOrControl+Shift+H',
+  SHOW_HISTORY: 'CommandOrControl+Shift+Y',
   SHOW_SETTINGS: 'CommandOrControl+Shift+S',
   QUIT: 'CommandOrControl+Shift+Q'
 } as const

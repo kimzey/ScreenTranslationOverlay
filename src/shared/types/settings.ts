@@ -64,7 +64,7 @@ export const defaultSettings: AppSettings = {
   shortcuts: {
     capture: 'CommandOrControl+Shift+X',
     hideOverlay: 'CommandOrControl+Shift+H',
-    showHistory: 'CommandOrControl+Shift+H',
+    showHistory: 'CommandOrControl+Shift+Y',
     showSettings: 'CommandOrControl+Shift+S',
     quit: 'CommandOrControl+Shift+Q'
   },

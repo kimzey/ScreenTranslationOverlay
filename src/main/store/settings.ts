@@ -12,17 +12,19 @@ import { app } from 'electron'
 
 export class SettingsStore {
   private store: Store<AppSettings>
-  private changeListeners: Map<keyof AppSettings, Set<(value: any) => void>> = new Map()
+  // Change listeners receive both newValue and oldValue (custom implementation, not electron-store's)
+  private changeListeners: Map<keyof AppSettings, Set<(newValue: any, oldValue: any) => void>> = new Map()
 
   constructor() {
+    // Define schema as mutable to satisfy electron-store's JSONSchema type
     const schema = {
       general: {
         type: 'object',
         properties: {
           sourceLanguage: { type: 'string' },
           autoStart: { type: 'boolean' },
-          theme: { type: 'string', enum: ['light', 'dark', 'system'] },
-          language: { type: 'string', enum: ['th', 'en'] }
+          theme: { type: 'string', enum: ['light', 'dark', 'system'] as string[] },
+          language: { type: 'string', enum: ['th', 'en'] as string[] }
         }
       },
       shortcuts: {
@@ -43,7 +45,7 @@ export class SettingsStore {
           fontFamily: { type: 'string' },
           backgroundColor: { type: 'string' },
           textColor: { type: 'string' },
-          position: { type: 'string', enum: ['cursor', 'center', 'custom'] },
+          position: { type: 'string', enum: ['cursor', 'center', 'custom'] as string[] },
           customPosition: { type: 'object' },
           autoHideDelay: { type: 'number' },
           clickThrough: { type: 'boolean' },
@@ -53,7 +55,7 @@ export class SettingsStore {
       ocr: {
         type: 'object',
         properties: {
-          engine: { type: 'string', enum: ['tesseract'] },
+          engine: { type: 'string', enum: ['tesseract'] as string[] },
           confidence: { type: 'number' },
           language: { type: 'string' },
           preprocess: { type: 'boolean' },
@@ -63,7 +65,7 @@ export class SettingsStore {
       translation: {
         type: 'object',
         properties: {
-          provider: { type: 'string', enum: ['google'] },
+          provider: { type: 'string', enum: ['google'] as string[] },
           apiEndpoint: { type: 'string' },
           cacheEnabled: { type: 'boolean' },
           cacheSize: { type: 'number' },
@@ -71,11 +73,10 @@ export class SettingsStore {
         }
       }
     }
-    } as const
 
     this.store = new Store<AppSettings>({
       name: 'settings',
-      schema,
+      schema: schema as any,
       defaults: defaultSettings
     })
 
@@ -155,18 +156,18 @@ export class SettingsStore {
    */
   onChange<K extends keyof AppSettings>(
     key: K,
-    callback: (value: AppSettings[K], oldValue: AppSettings[K]) => void
+    callback: (newValue: AppSettings[K], oldValue: AppSettings[K]) => void
   ): () => void {
     if (!this.changeListeners.has(key)) {
       this.changeListeners.set(key, new Set())
     }
-    this.changeListeners.get(key)!.add(callback)
+    this.changeListeners.get(key)!.add(callback as (newValue: any, oldValue: any) => void)
 
     // Return unsubscribe function
     return () => {
       const listeners = this.changeListeners.get(key)
       if (listeners) {
-        listeners.delete(callback)
+        listeners.delete(callback as (newValue: any, oldValue: any) => void)
         if (listeners.size === 0) {
           this.changeListeners.delete(key)
         }

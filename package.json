@@ -2,7 +2,7 @@
   "name": "screen-translation-overlay",
   "version": "0.1.0",
   "description": "Real-time screen translation overlay for Thai users",
-  "main": "dist/main/index.js",
+  "main": "out/main/index.js",
   "author": "Your Name",
   "license": "MIT",
   "private": true,
@@ -22,6 +22,8 @@
     "@vitalets/google-translate-api": "^9.2.0",
     "better-sqlite3": "^9.2.2",
     "electron-store": "^8.1.0",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
     "tesseract.js": "^5.0.4",
     "zustand": "^4.4.7"
   },
@@ -34,6 +36,7 @@
     "@typescript-eslint/eslint-plugin": "^6.17.0",
     "@typescript-eslint/parser": "^6.17.0",
     "@vitejs/plugin-react": "^4.2.1",
+    "@vitest/coverage-v8": "^4.0.18",
     "autoprefixer": "^10.4.16",
     "electron": "^28.1.0",
     "electron-builder": "^24.9.1",
@@ -45,7 +48,7 @@
     "tailwindcss": "^3.4.0",
     "typescript": "^5.3.3",
     "vite": "^5.0.10",
-    "vitest": "^1.1.0"
+    "vitest": "^4.0.18"
   },
   "build": {
     "appId": "com.yourcompany.screen-translation-overlay",
@@ -55,20 +58,27 @@
       "buildResources": "resources"
     },
     "files": [
-      "dist/**/*",
+      "out/**/*",
       "resources/**/*"
     ],
     "win": {
-      "target": ["nsis"],
+      "target": [
+        "nsis"
+      ],
       "icon": "resources/icons/icon.ico"
     },
     "mac": {
-      "target": ["dmg"],
+      "target": [
+        "dmg"
+      ],
       "icon": "resources/icons/icon.icns",
       "category": "public.app-category.productivity"
     },
     "linux": {
-      "target": ["AppImage", "deb"],
+      "target": [
+        "AppImage",
+        "deb"
+      ],
       "icon": "resources/icons",
       "category": "Utility"
     },
