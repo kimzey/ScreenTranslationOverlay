@@ -1,0 +1,13 @@
+# Tesseract Language Data Files
+
+This directory will contain Tesseract traineddata files for OCR.
+
+Language data files are downloaded during build or on first use.
+
+Supported languages:
+- eng (English)
+- jpn (Japanese)
+- kor (Korean)
+- chi_sim (Chinese Simplified)
+- chi_tra (Chinese Traditional)
+- tha (Thai)

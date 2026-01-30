@@ -1,907 +1,705 @@
-# STYLEGUIDE.md - แนวทางการเขียนโค้ดและรูปแบบเอกสาร
+# Screen Translation Overlay - UI/UX Style Guide
 
-## 📋 ภาพรวม (Overview)
-
-เอกสารนี้ระบุแนวทางการเขียนโค้ด การจัดรูปแบบ และโครงสร้างเอกสารที่ทีมพัฒนาต้องปฏิบัติตาม เพื่อให้โค้ดมีความสอดคล้อง อ่านง่าย และบำรุงรักษาได้
-
----
-
-## 💻 มาตรฐานการเขียนโค้ด Rust (Rust Coding Standards)
-
-### 1. การจัดรูปแบบ (Formatting)
-
-#### 1.1 ใช้ rustfmt อัตโนมัติ
-```toml
-# rustfmt.toml
-max_width = 100
-hard_tabs = false
-tab_spaces = 4
-newline_style = "Unix"
-use_small_heuristics = "Default"
-reorder_imports = true
-reorder_modules = true
-```
-
-#### 1.2 โครงสร้างไฟล์ (File Structure)
-```rust
-// 1. Module documentation
-//! This module handles OCR operations
-
-// 2. Imports (grouped alphabetically)
-use std::path::Path;
-use anyhow::{Context, Result};
-use tesseract::Tesseract;
-
-// 3. Constants
-const MAX_IMAGE_SIZE: usize = 10 * 1024 * 1024; // 10MB
-
-// 4. Type definitions
-pub struct OcrEngine {
-    client: Tesseract,
-    language: String,
-}
-
-// 5. Implementations
-impl OcrEngine {
-    // Public methods first
-    pub fn new(language: &str) -> Result<Self> {
-        // ...
-    }
-    
-    // Private methods
-    fn validate_image(&self, path: &Path) -> Result<()> {
-        // ...
-    }
-}
-
-// 6. Tests
-#[cfg(test)]
-mod tests {
-    use super::*;
-    
-    #[test]
-    fn test_ocr_engine_creation() {
-        // ...
-    }
-}
-```
-
-#### 1.3 การตั้งชื่อ (Naming Conventions)
-
-**Type names (structs, enums, traits):** PascalCase
-```rust
-struct TranslationResult;
-enum Language;
-trait Translator;
-```
-
-**Function and method names:** snake_case
-```rust
-fn translate_text(text: &str) -> Result<String>;
-fn get_translation_history() -> Vec<TranslationRecord>;
-```
-
-**Variable names:** snake_case
-```rust
-let translation_result = translate_text("hello");
-let user_settings = Settings::load()?;
-```
-
-**Constants:** SCREAMING_SNAKE_CASE
-```rust
-const DEFAULT_LANGUAGE: &str = "th";
-const MAX_RETRY_COUNT: u32 = 3;
-const API_TIMEOUT_MS: u64 = 5000;
-```
-
-**Lifetime parameters:** Short and descriptive
-```rust
-fn process<'a>(input: &'a str) -> &'a str;
-```
-
-**Type parameters:** PascalCase, descriptive
-```rust
-struct Container<T: Display> {
-    value: T,
-}
-```
-
-### 2. เอกสารประกอบโค้ด (Code Documentation)
-
-#### 2.1 Module Documentation
-```rust
-//! # OCR Module
-//!
-//! This module provides optical character recognition (OCR) functionality
-//! for extracting text from images using the Tesseract engine.
-//!
-//! ## Example
-//!
-//! ```no_run
-//! use tran_overlay::core::ocr::OcrEngine;
-//!
-//! let engine = OcrEngine::new("eng+tha")?;
-//! let text = engine.recognize("image.png")?;
-//! println!("Recognized text: {}", text);
-//! ```
-//!
-//! ## Features
-//!
-//! - Multi-language support
-//! - Image preprocessing
-//! - Confidence scoring
-```
-
-#### 2.2 Function Documentation
-```rust
-/// Recognizes text from an image file.
-///
-/// This function loads an image from the specified path, preprocesses it,
-/// and uses the configured Tesseract engine to extract text.
-///
-/// # Arguments
-///
-/// * `image_path` - Path to the image file to process
-///
-/// # Returns
-///
-/// Returns a `Result` containing:
-/// - `Ok(String)`: The recognized text
-/// - `Err(anyhow::Error)`: If OCR fails
-///
-/// # Errors
-///
-/// This function will return an error if:
-/// - The image file cannot be read
-/// - The image format is not supported
-/// - OCR processing fails
-///
-/// # Example
-///
-/// ```no_run
-/// # use tran_overlay::core::ocr::OcrEngine;
-/// # fn main() -> anyhow::Result<()> {
-/// let engine = OcrEngine::new("eng")?;
-/// let text = engine.recognize("screenshot.png")?;
-/// # Ok(())
-/// # }
-/// ```
-///
-/// # Performance
-///
-/// Processing time typically ranges from 1-3 seconds for standard images.
-///
-/// # See Also
-///
-/// - [`recognize_from_bytes`]: For processing in-memory image data
-pub fn recognize(&self, image_path: &Path) -> Result<String> {
-    // Implementation
-}
-```
-
-#### 2.3 Struct Documentation
-```rust
-/// Configuration for the translation service.
-///
-/// This struct holds all settings needed to connect to and interact
-/// with translation APIs.
-///
-/// # Fields
-///
-/// * `api_key` - The API key for authentication (required)
-/// * `provider` - The translation provider to use
-/// * `timeout_ms` - Request timeout in milliseconds (default: 5000)
-/// * `max_retries` - Maximum number of retry attempts (default: 3)
-///
-/// # Example
-///
-/// ```
-/// use tran_overlay::core::translate::TranslationConfig;
-///
-/// let config = TranslationConfig::builder()
-///     .api_key("your-api-key")
-///     .provider(Provider::Google)
-///     .build();
-/// ```
-#[derive(Debug, Clone)]
-pub struct TranslationConfig {
-    /// API key for authentication with the translation service
-    pub api_key: String,
-    
-    /// The translation provider to use
-    pub provider: Provider,
-    
-    /// Request timeout in milliseconds
-    pub timeout_ms: u64,
-    
-    /// Maximum number of retry attempts on failure
-    pub max_retries: u32,
-}
-```
-
-### 3. Error Handling
-
-#### 3.1 ใช้ anyhow สำหรับ Error Handling
-```rust
-use anyhow::{Context, Result};
-
-fn process_image(path: &Path) -> Result<String> {
-    // Use context() to add error information
-    let image = image::open(path)
-        .context(format!("Failed to open image at {}", path.display()))?;
-    
-    // Use with_context() for lazy evaluation
-    let buffer = image.to_rgb8()
-        .with_context(|| "Failed to convert image to RGB")?;
-    
-    Ok("processed".to_string())
-}
-```
-
-#### 3.2 กำหนด Error Types เฉพาะทาง
-```rust
-use thiserror::Error;
-
-#[derive(Error, Debug)]
-pub enum OcrError {
-    #[error("Image file not found: {0}")]
-    ImageNotFound(String),
-    
-    #[error("Unsupported image format: {0}")]
-    UnsupportedFormat(String),
-    
-    #[error("OCR processing failed: {0}")]
-    ProcessingError(String),
-    
-    #[error("Tesseract error: {0}")]
-    TesseractError(#[from] tesseract::TesseractError),
-    
-    #[error("API error: status {status}, message: {message}")]
-    ApiError {
-        status: u16,
-        message: String,
-    },
-}
-```
-
-### 4. Testing Standards
-
-#### 4.1 Unit Test
-```rust
-#[cfg(test)]
-mod tests {
-    use super::*;
-    
-    #[test]
-    fn test_valid_api_key_format() {
-        let key = "sk-1234567890abcdef";
-        assert!(validate_api_key(key).is_ok());
-    }
-    
-    #[test]
-    fn test_invalid_api_key_format() {
-        let key = "invalid-key";
-        assert!(validate_api_key(key).is_err());
-    }
-    
-    #[test]
-    fn test_translation_with_empty_text() {
-        let result = translate_text("", "en", "th");
-        assert!(matches!(result, Err(OcrError::EmptyInput)));
-    }
-}
-```
-
-#### 4.2 Integration Test
-```rust
-// tests/integration_test.rs
-use tran_overlay::core::translate::TranslationService;
-
-#[tokio::test]
-async fn test_full_translation_flow() {
-    let service = TranslationService::new(
-        std::env::var("TEST_API_KEY").unwrap()
-    ).await.unwrap();
-    
-    let result = service.translate("Hello, world!", "en", "th").await.unwrap();
-    
-    assert!(!result.is_empty());
-    assert_ne!(result, "Hello, world!");
-}
-```
+## Version
+- **Version**: 0.1.0
+- **Last Updated**: 2025-01-31
+- **Status**: Draft
 
 ---
 
-## 📝 มาตรฐานการเขียนโค้ด Frontend (Frontend Coding Standards)
+## Table of Contents
+1. [Design Principles](#design-principles)
+2. [Color System](#color-system)
+3. [Typography](#typography)
+4. [Spacing & Layout](#spacing--layout)
+5. [Components](#components)
+6. [Icons & Graphics](#icons--graphics)
+7. [Animations](#animations)
+8. [Accessibility](#accessibility)
+9. [Screen-Specific Guidelines](#screen-specific-guidelines)
 
-### 1. React/TypeScript
+---
 
-#### 1.1 Component Structure
+## Design Principles
+
+### 1. Minimalism
+- **Less is more**: Remove unnecessary elements
+- Focus on content, not chrome
+- Clean, uncluttered interfaces
+
+### 2. Speed
+- **Fast interactions**: Responsive UI (<100ms)
+- Instant feedback for user actions
+- Progressive loading for heavy operations
+
+### 3. Transparency
+- **Visual transparency**: Overlay windows use opacity
+- **Functional transparency**: Clear indication of what's happening
+- Progress indicators for long operations
+
+### 4. Thai Language First
+- **Primary language**: All UI in Thai
+- **Secondary**: English labels for technical settings
+- **Font support**: Proper Thai typography
+
+### 5. Keyboard-First
+- **Power user focus**: Keyboard shortcuts for all actions
+- **Minimal mouse usage**: Efficient navigation
+- **Visible shortcuts**: Show shortcuts in UI
+
+---
+
+## Color System
+
+### Primary Colors
+Based on Tailwind CSS palette (blue):
+
+| Color | Hex | Usage |
+|-------|-----|-------|
+| Primary 50 | `#f0f9ff` | Background highlights |
+| Primary 500 | `#0ea5e9` | Primary buttons, links |
+| Primary 600 | `#0284c7` | Primary buttons (hover) |
+| Primary 700 | `#0369a1` | Primary buttons (active) |
+
+### Semantic Colors
+
+| Role | Hex | Tailwind | Usage |
+|------|-----|---------|-------|
+| Success | `#10b981` | `green-500` | Success messages |
+| Warning | `#f59e0b` | `amber-500` | Warnings |
+| Error | `#ef4444` | `red-500` | Errors, destructive actions |
+| Info | `#3b82f6` | `blue-500` | Information |
+
+### Neutral Colors (Dark Mode)
+
+| Shade | Hex | Usage |
+|-------|-----|-------|
+| Dark 50 | `#f8fafc` | Text (primary) |
+| Dark 100 | `#f1f5f9` | Text (secondary) |
+| Dark 200 | `#e2e8f0` | Borders |
+| Dark 800 | `#1e293b` | Background (dark mode) |
+| Dark 900 | `#0f172a` | Background (elevated) |
+
+### Neutral Colors (Light Mode)
+
+| Shade | Hex | Usage |
+|-------|-----|-------|
+| Gray 50 | `#f9fafb` | Background (primary) |
+| Gray 100 | `#f3f4f6` | Background (secondary) |
+| Gray 200 | `#e5e7eb` | Borders |
+| Gray 700 | `#374151` | Text (primary) |
+| Gray 900 | `#111827` | Text (inverse) |
+
+### Overlay Colors
+
+| Component | Default | Customizable |
+|-----------|---------|--------------|
+| Background | `rgba(15, 23, 42, 0.9)` | Yes (hex + opacity) |
+| Text | `#f8fafc` | Yes |
+| Border | `#3b82f6` (accent) | Yes |
+| Selection | `rgba(59, 130, 246, 0.3)` | No |
+
+### Usage Guidelines
+
 ```tsx
-// 1. Imports
-import React, { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { useTranslation } from '@/hooks/use-translation';
+// ✅ GOOD: Semantic color usage
+<button className="bg-primary-500 hover:bg-primary-600 text-white">
+  แปลภาษา
+</button>
 
-// 2. Types
-interface TranslationOverlayProps {
-  x: number;
-  y: number;
-  text: string;
-  onClose: () => void;
+<SuccessMessage className="text-green-500">
+  แปลสำเร็จ!
+</SuccessMessage>
+
+// ✅ GOOD: Dark mode support
+<div className="bg-white dark:bg-dark-800 text-gray-900 dark:text-dark-50">
+  Content
+</div>
+
+// ❌ BAD: Hardcoded colors
+<div style={{ backgroundColor: '#0ea5e9' }}>
+  Button
+</div>
+```
+
+---
+
+## Typography
+
+### Font Families
+
+| Usage | Font Family | Fallback |
+|-------|-------------|----------|
+| Body (Thai) | **Sarabun** | `system-ui`, `sans-serif` |
+| Body (English) | **Inter** | `system-ui`, `sans-serif` |
+| Monospace | **JetBrains Mono** | `monospace` |
+| UI Labels | Sarabun | `system-ui` |
+
+### Font Sizes
+
+| Scale | Size | Line Height | Usage |
+|-------|------|-------------|-------|
+| xs | 0.75rem (12px) | 1rem | Captions, labels |
+| sm | 0.875rem (14px) | 1.25rem | Secondary text |
+| base | 1rem (16px) | 1.5rem | Body text |
+| lg | 1.125rem (18px) | 1.75rem | Emphasized text |
+| xl | 1.25rem (20px) | 1.75rem | Subheadings |
+| 2xl | 1.5rem (24px) | 2rem | Headings |
+| 3xl | 1.875rem (30px) | 2.25rem | Page titles |
+
+### Font Weights
+
+| Weight | Value | Usage |
+|--------|-------|-------|
+| Normal | 400 | Body text |
+| Medium | 500 | Emphasized text, labels |
+| Semibold | 600 | Headings, important text |
+| Bold | 700 | Titles, CTAs |
+
+### Overlay Typography (Customizable)
+
+| Property | Range | Default |
+|----------|-------|---------|
+| Font size | 12-32px | 16px |
+| Font family | System fonts + bundled | Sarabun |
+| Line height | 1.4-1.8 | 1.6 |
+
+### Usage Guidelines
+
+```tsx
+// ✅ GOOD: Semantic typography
+<h1 className="text-3xl font-bold text-gray-900 dark:text-dark-50">
+  การตั้งค่า
+</h1>
+
+<p className="text-base text-gray-700 dark:text-gray-300">
+  เลือกภาษาต้นฉบับสำหรับการแปล
+</p>
+
+<label className="text-sm font-medium text-gray-600 dark:text-gray-400">
+  ภาษาต้นฉบับ
+</label>
+
+// ❌ BAD: Arbitrary sizes
+<h1 style={{ fontSize: '23px', fontWeight: 550 }}>
+  Settings
+</h1>
+```
+
+---
+
+## Spacing & Layout
+
+### Spacing Scale
+Based on Tailwind's spacing scale (4px base unit):
+
+| Scale | Value | Usage |
+|-------|-------|-------|
+| 0 | 0px | No spacing |
+| 1 | 4px | Tight spacing |
+| 2 | 8px | Compact spacing |
+| 3 | 12px | Comfortable spacing |
+| 4 | 16px | Default spacing |
+| 5 | 20px | Relaxed spacing |
+| 6 | 24px | Section spacing |
+| 8 | 32px | Large sections |
+| 12 | 48px | Major sections |
+
+### Layout Containers
+
+| Component | Max Width | Padding |
+|-----------|-----------|---------|
+| Settings window | 800px | 24px |
+| History window | 900px | 24px |
+| Overlay window | 600px | 16px |
+| Form sections | 100% | 16px vertical |
+
+### Grid System
+12-column grid for settings/forms:
+
+```
+|---|---|---|---|---|---|---|---|---|---|---|  (12 columns)
+    [1 col]   [2 cols]  [3 cols]      [6 cols]
+```
+
+### Usage Guidelines
+
+```tsx
+// ✅ GOOD: Consistent spacing
+<div className="space-y-4"> // Vertical spacing between children
+  <Section />
+  <Section />
+  <Section />
+</div>
+
+<div className="flex gap-4"> // Horizontal gap
+  <Button />
+  <Button />
+</div>
+
+// ✅ GOOD: Responsive padding
+<div className="px-6 py-4">
+  Content with 24px horizontal, 16px vertical padding
+</div>
+
+// ❌ BAD: Inconsistent spacing
+<div style={{ marginBottom: '13px' }}>
+  Arbitrary spacing
+</div>
+```
+
+---
+
+## Components
+
+### Button
+
+#### Primary Button
+```tsx
+<button className="bg-primary-500 hover:bg-primary-600 active:bg-primary-700
+                   text-white font-medium px-4 py-2 rounded-lg
+                   transition-colors duration-150
+                   disabled:opacity-50 disabled:cursor-not-allowed">
+  แปลภาษา
+</button>
+```
+
+#### Secondary Button
+```tsx
+<button className="bg-white dark:bg-dark-800
+                   border border-gray-300 dark:border-gray-600
+                   hover:bg-gray-50 dark:hover:bg-dark-700
+                   text-gray-700 dark:text-gray-300
+                   font-medium px-4 py-2 rounded-lg
+                   transition-colors duration-150">
+  ยกเลิก
+</button>
+```
+
+#### Icon Button
+```tsx
+<button className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-700
+                   text-gray-600 dark:text-gray-400
+                   transition-colors duration-150">
+  <Icon name="close" />
+</button>
+```
+
+### Input Fields
+
+```tsx
+<input
+  type="text"
+  className="w-full px-3 py-2
+             border border-gray-300 dark:border-gray-600
+             rounded-lg
+             bg-white dark:bg-dark-800
+             text-gray-900 dark:text-dark-50
+             placeholder-gray-400
+             focus:outline-none focus:ring-2 focus:ring-primary-500
+             transition-all duration-150"
+  placeholder="กรอกข้อความ..."
+/>
+```
+
+### Card/Panel
+
+```tsx
+<div className="bg-white dark:bg-dark-800
+                border border-gray-200 dark:border-gray-700
+                rounded-lg
+                p-6
+                shadow-sm">
+  <h3 className="text-lg font-semibold mb-4">การตั้งค่า</h3>
+  Content
+</div>
+```
+
+### Overlay Window
+
+```tsx
+<div className="fixed inset-0 pointer-events-none flex items-start justify-center p-4">
+  <div className="pointer-events-auto
+                  bg-dark-900/90
+                  backdrop-blur-sm
+                  border border-primary-500
+                  rounded-lg
+                  p-4
+                  max-w-[600px]
+                  shadow-2xl
+                  animate-fade-in">
+    <p className="text-dark-50 text-base leading-relaxed">
+      ข้อความแปลภาษา...
+    </p>
+  </div>
+</div>
+```
+
+### Toast Notification
+
+```tsx
+<div className="fixed bottom-4 right-4
+                bg-white dark:bg-dark-800
+                border-l-4 border-green-500
+                rounded-lg shadow-lg
+                px-4 py-3
+                animate-slide-up">
+  <p className="text-sm font-medium text-gray-900 dark:text-dark-50">
+    แปลสำเร็จ!
+  </p>
+</div>
+```
+
+---
+
+## Icons & Graphics
+
+### Icon Library
+- **Phosphor Icons** or **Lucide Icons**
+- Consistent stroke width (2px)
+- Fill variants for active states
+
+### Icon Sizes
+
+| Size | Value | Usage |
+|------|-------|-------|
+| xs | 16px | Small buttons, inline |
+| sm | 20px | Default UI icons |
+| md | 24px | Navigation, list items |
+| lg | 32px | Feature icons |
+| xl | 48px | Hero icons |
+
+### App Icon
+- **Style**: Flat, modern
+- **Colors**: Primary blue gradient
+- **Symbol**: Translation/language symbol
+- **Sizes**: 16px, 32px, 64px, 128px, 256px, 512px
+
+### System Tray Icon
+- **Template**: Monochrome for macOS
+- **Color**: Dark/light variants
+- **Size**: 16x16px standard
+
+---
+
+## Animations
+
+### Duration Scale
+
+| Duration | Usage |
+|----------|-------|
+| 75ms | Micro-interactions (hover) |
+| 150ms | Fast transitions (dropdowns) |
+| 200ms | Default transitions (modals) |
+| 300ms | Slow transitions (page transitions) |
+| 500ms | Very slow (rarely used) |
+
+### Easing Functions
+
+| Easing | Tailwind | Usage |
+|--------|----------|-------|
+| Ease-out | `ease-out` | Elements leaving |
+| Ease-in | `ease-in` | Elements entering |
+| Ease-in-out | `ease-in-out` | Movement |
+| Linear | `linear` | Fades, color changes |
+
+### Predefined Animations
+
+```tsx
+// Fade in
+<div className="animate-fade-in">
+  Content fades in (200ms)
+</div>
+
+// Slide up
+<div className="animate-slide-up">
+  Content slides up (300ms)
+</div>
+
+// Pulse (for loading states)
+<div className="animate-pulse-slow">
+  Loading indicator
+</div>
+```
+
+### Animation Guidelines
+
+```tsx
+// ✅ GOOD: Subtle, purposeful animations
+<button className="transition-colors duration-150 hover:bg-primary-600">
+  Button
+</button>
+
+// ✅ GOOD: Loading states
+<div className="animate-pulse">
+  Loading translations...
+</div>
+
+// ❌ BAD: Distracting animations
+<div className="animate-spin hover:animate-bounce">
+  Too much motion!
+</div>
+```
+
+---
+
+## Accessibility
+
+### Color Contrast
+
+- **WCAG AA**: Minimum 4.5:1 for normal text
+- **WCAG AA**: Minimum 3:1 for large text (18px+)
+- **WCAG AAA**: Minimum 7:1 (enhanced)
+
+Example compliant combinations:
+- `#111827` on `#ffffff` (16.4:1) ✅
+- `#0ea5e9` on `#ffffff` (4.6:1) ✅
+- `#64748b` on `#ffffff` (5.1:1) ✅
+
+### Focus States
+
+```tsx
+// ✅ GOOD: Visible focus indicator
+<button className="focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
+  Button with clear focus
+</button>
+
+// ❌ BAD: No focus indicator
+<button className="focus:outline-none">
+  Invisible focus
+</button>
+```
+
+### Keyboard Navigation
+
+- All interactive elements must be keyboard accessible
+- Logical tab order
+- Visible focus indicators
+- Escape key closes modals/overlays
+
+### Screen Readers
+
+```tsx
+// ✅ GOOD: Semantic HTML + ARIA labels
+<button aria-label="แปลข้อความ">
+  <TranslateIcon />
+</button>
+
+<div role="status" aria-live="polite">
+  {status}
+</div>
+
+// ✅ GOOD: Alt text for images
+<img src="screenshot.png" alt="ภาพหน้าจอที่จะแปล" />
+```
+
+### Text Sizing
+
+- Support 200% zoom without horizontal scrolling
+- Use relative units (rem) not pixels
+- Respect user's font size preferences
+
+---
+
+## Screen-Specific Guidelines
+
+### Settings Window
+
+**Layout**: Sidebar navigation + main content area
+
+```
+┌─────────────────────────────────────────────┐
+│ การตั้งค่า                          [_][□][×] │
+├──────────┬──────────────────────────────────┤
+│ ทั่วไป   │ การตั้งค่าทั่วไป                    │
+│ ○ ทั่วไป  │ ┌────────────────────────────┐    │
+│ ◀ ปุ่มลัด  │ │ ภาษาต้นฉบับ:            │    │
+│ ○ การแสดง│ │ [Auto               ▼] │    │
+│ ○ ประวัติ│ │                            │    │
+│          │ └────────────────────────────┘    │
+└──────────┴──────────────────────────────────┘
+```
+
+**Guidelines**:
+- 240px sidebar (fixed width)
+- 550px main content (scrollable)
+- Sticky section headers
+- Group related settings
+
+### Overlay Window
+
+**Characteristics**:
+- Always-on-top
+- Frameless (no title bar)
+- Transparent background
+- Click-through option
+- Auto-hide after delay
+
+**Positioning**:
+- Near cursor (default)
+- Screen center (optional)
+- Last position (optional)
+
+```tsx
+// Cursor positioning example
+const position = {
+  top: Math.min(cursorY + 20, window.innerHeight - overlayHeight - 20),
+  left: Math.min(cursorX, window.innerWidth - overlayWidth - 20)
 }
-
-// 3. Component
-export const TranslationOverlay: React.FC<TranslationOverlayProps> = ({
-  x,
-  y,
-  text,
-  onClose
-}) => {
-  // 4. Hooks
-  const [isVisible, setIsVisible] = useState(true);
-  const { translate } = useTranslation();
-
-  // 5. Effects
-  useEffect(() => {
-    const handleKeyPress = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-
-    window.addEventListener('keydown', handleKeyPress);
-    return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [onClose]);
-
-  // 6. Handlers
-  const handleCopy = () => {
-    navigator.clipboard.writeText(text);
-  };
-
-  // 7. Render
-  if (!isVisible) return null;
-
-  return (
-    <div className="overlay-container" style={{ left: x, top: y }}>
-      <p className="overlay-text">{text}</p>
-      <div className="overlay-actions">
-        <Button onClick={handleCopy}>Copy</Button>
-        <Button onClick={onClose} variant="outline">Close</Button>
-      </div>
-    </div>
-  );
-};
 ```
 
-#### 1.2 การตั้งชื่อ (Naming Conventions)
+### History Window
 
-**Components:** PascalCase
+**Layout**: Search bar + filterable list
+
+```
+┌─────────────────────────────────────────────┐
+│ ประวัติการแปล                       [_][□][×] │
+├─────────────────────────────────────────────┤
+│ 🔍 ค้นหา........................              │
+├─────────────────────────────────────────────┤
+│ Hello → สวัสดี          31 ม.ค. 2025  [×]   │
+│ Game → เกม              31 ม.ค. 2025  [×]   │
+│ Settings → การตั้งค่า   30 ม.ค. 2025  [×]   │
+└─────────────────────────────────────────────┘
+```
+
+**Guidelines**:
+- 900px width, 700px height
+- Search bar always visible
+- Pagination for 100+ entries
+- Hover actions (copy, delete)
+
+### Screen Selector
+
+**Characteristics**:
+- Fullscreen (per monitor)
+- Semi-transparent dark overlay (50% opacity)
+- Crosshair cursor
+- Border around selection
+- Size label (e.g., "300 × 200")
+
+```
+┌─────────────────────────────────────────────┐
+│                   ╱│                         │
+│                    ╱ 300 × 200              │
+│                   ╱                          │
+│                  ╱                           │
+└─────────────────────────────────────────────┘
+```
+
+---
+
+## Dark Mode
+
+### Toggle
+- System preference by default
+- Manual override in settings
+- Persists across sessions
+
+### Adaptations
+
+| Element | Light Mode | Dark Mode |
+|---------|-----------|-----------|
+| Background | `#ffffff` | `#1e293b` |
+| Text | `#111827` | `#f8fafc` |
+| Border | `#e5e7eb` | `#334155` |
+| Input BG | `#ffffff` | `#0f172a` |
+| Hover | `#f3f4f6` | `#334155` |
+
+### Implementation
+
 ```tsx
-export const TranslationOverlay: React.FC = () => {};
-export const SettingsPanel: React.FC = () => {};
-```
+// ✅ GOOD: Dark mode variants
+<div className="bg-white dark:bg-dark-800
+                text-gray-900 dark:text-dark-50
+                border border-gray-200 dark:border-gray-700">
+  Content
+</div>
 
-**Functions/Hooks:** camelCase
-```tsx
-const handleTranslate = () => {};
-const useTranslation = () => {};
-```
-
-**Constants:** UPPER_SNAKE_CASE
-```tsx
-const MAX_RETRY_ATTEMPTS = 3;
-const DEFAULT_LANGUAGE = 'en';
-```
-
-**Types/Interfaces:** PascalCase
-```tsx
-interface TranslationResult {}
-type Language = 'en' | 'th' | 'ja';
-```
-
-### 2. การจัดรูปแบบ (Formatting)
-
-#### 2.1 ใช้ ESLint + Prettier
-```json
-{
-  "semi": true,
-  "singleQuote": true,
-  "tabWidth": 2,
-  "trailingComma": "es5",
-  "printWidth": 100,
-  "arrowParens": "always"
+// ❌ BAD: Separate dark mode components
+if (isDarkMode) {
+  return <DarkComponent />
 }
+return <LightComponent />
 ```
 
-#### 2.2 Props Interface
+---
+
+## Responsive Design
+
+### Breakpoints
+
+| Breakpoint | Width | Usage |
+|------------|-------|-------|
+| sm | 640px | Small screens |
+| md | 768px | Tablets |
+| lg | 1024px | Desktop (default) |
+| xl | 1280px | Large desktop |
+
+### Usage
+
 ```tsx
-interface ComponentProps {
-  /** Required props first */
-  id: string;
-  data: DataType;
-  
-  /** Optional props */
-  isLoading?: boolean;
-  className?: string;
-  
-  /** Callbacks */
-  onSuccess?: (result: ResultType) => void;
-  onError?: (error: Error) => void;
-}
-```
+// ✅ GOOD: Responsive classes
+<div className="w-full lg:w-1/2 px-4 lg:px-6">
+  Content
+</div>
 
-### 3. Documentation
-
-#### 3.1 Component Documentation
-```tsx
-/**
- * Translation Overlay Component
- * 
- * Displays translated text overlay on the screen at specified coordinates.
- * 
- * @component
- * @example
- * ```tsx
- * <TranslationOverlay
- *   x={100}
- *   y={200}
- *   text="สวัสดี"
- *   onClose={() => console.log('closed')}
- * />
- * ```
- * 
- * @param {number} x - X coordinate for overlay position
- * @param {number} y - Y coordinate for overlay position
- * @param {string} text - Translated text to display
- * @param {() => void} onClose - Callback when overlay is closed
- */
-export const TranslationOverlay: React.FC<TranslationOverlayProps> = ({
-  x,
-  y,
-  text,
-  onClose
-}) => {
-  // ...
-};
+// ✅ GOOD: Responsive utilities
+<div className="hidden md:block">
+  Desktop content
+</div>
 ```
 
 ---
 
-## 🎯 มาตรฐานข้อความคอมมิต (Commit Message Standards)
+## Thai Language Considerations
 
-### 1. รูปแบบ Conventional Commits
+### Typography
+- Use Sarabun font for proper Thai rendering
+- Line height 1.6-1.8 for readability
+- No justification (causes poor spacing)
 
-```
-<type>(<scope>): <subject>
+### Text Alignment
+- Left alignment for body text
+- Center for headings/titles
+- Right alignment for numbers
 
-<body>
-
-<footer>
-```
-
-### 2. Types
-
-| Type | Description |
-|------|-------------|
-| `feat` | New feature |
-| `fix` | Bug fix |
-| `docs` | Documentation changes |
-| `style` | Code style changes (formatting, semi-colons, etc.) |
-| `refactor` | Code refactoring without changing functionality |
-| `perf` | Performance improvements |
-| `test` | Adding or updating tests |
-| `chore` | Maintenance tasks, dependency updates |
-| `build` | Build system or external dependencies changes |
-| `ci` | CI configuration changes |
-
-### 3. ตัวอย่างคอมมิต
-
-#### 3.1 คอมมิตฟีเจอร์ใหม่
-```
-feat(ocr): add Tesseract integration for text recognition
-
-- Implement OcrEngine struct with Tesseract backend
-- Add support for multi-language recognition
-- Include image preprocessing for better accuracy
-
-Closes #12
-```
-
-#### 3.2 คอมมิตแก้บัก
-```
-fix(translation): handle API rate limiting errors
-
-Add retry logic with exponential backoff when encountering
-429 Too Many Requests errors from the translation API.
-
-Fixes #45
-```
-
-#### 3.3 คอมมิตเอกสาร
-```
-docs(readme): update installation instructions
-
-Clarify Tesseract installation requirements for Windows.
-Add troubleshooting section for common issues.
-```
-
-#### 3.4 คอมมิต refactor
-```
-refactor(settings): extract config loading logic
-
-Move configuration loading logic into separate module
-to improve testability and reduce coupling.
-
-Breaking Changes:
-- Settings::load() now returns Result<Settings, ConfigError>
-```
-
-### 4. กฎการเขียน Commit Message
-
-1. **Subject line**
-   - ใช้ imperative mood (ให้ ไม่ใช่ "ให้แล้ว")
-   - ไม่ขึ้นต้นด้วยตัวพิมพ์ใหญ่ (ยกเว้น acronym)
-   - ไม่ลงท้ายด้วยจุด
-   - ขนาดไม่เกิน 50 ตัวอักษร
-
-2. **Body**
-   - ใช้คำกริยา imperative
-   - อธิบาย "ทำไม" และ "อะไร" ไม่ใช่ "อย่างไร"
-   - แต่ละบรรทัดไม่เกิน 72 ตัวอักษร
-
-3. **Footer**
-   - ระบุ issue ที่เกี่ยวข้อง (เช่น `Closes #123`)
-   - ระบุ breaking changes ถ้ามี
+### Input Methods
+- Support Thai keyboard input
+- Proper cursor placement in Thai text
+- No text truncation on Thai characters
 
 ---
 
-## 📋 มาตรฐาน Release Notes (Release Notes Standards)
+## Component Library
 
-### 1. โครงสร้าง Release Notes
+### Recommended Components
 
-```markdown
-## [X.Y.Z] - YYYY-MM-DD
+For rapid prototyping, use:
+- **Headless UI** (accessible, unstyled components)
+- **Radix UI** (primitives, composable)
+- **Tailwind UI** (pre-built components, paid)
 
-### Added
-- New feature 1
-- New feature 2
+### Custom Components
 
-### Changed
-- Changed behavior 1
-- Updated dependency 1 from v1.0 to v2.0
-
-### Deprecated
-- Feature 1 will be removed in version Y.Z.0
-
-### Removed
-- Old feature 1
-
-### Fixed
-- Fixed bug 1
-- Fixed bug 2
-
-### Security
-- Fixed security vulnerability 1
-```
-
-### 2. ตัวอย่าง Release Notes
-
-```markdown
-## [0.2.0] - 2024-01-15
-
-### Added
-- Support for DeepL translation API
-- Custom hotkey configuration
-- Translation history with search functionality
-- Auto-detect source language feature
-- Dark mode support
-
-### Changed
-- Improved OCR accuracy by 15% for Thai text
-- Reduced translation latency by 30%
-- Updated Tesseract to version 5.3.0
-- Redesigned settings panel for better UX
-
-### Fixed
-- Fixed memory leak when overlay stays open for long periods
-- Fixed crash on Windows when capturing certain window types
-- Fixed incorrect text encoding for Japanese characters
-- Fixed hotkey conflicts with other applications
-
-### Performance
-- Optimized image processing pipeline
-- Reduced memory usage by 40%
-- Improved startup time by 50%
-
-### Breaking Changes
-- API key configuration format has changed (see migration guide)
-- Minimum supported Rust version is now 1.70
-
-### Migration Notes
-Users upgrading from 0.1.x need to:
-1. Update API key format in settings
-2. Reconfigure custom hotkeys
-3. Clear translation history (optional)
-```
+Build custom for:
+- Overlay window (special requirements)
+- Screen selector (unique functionality)
+- Translation display (domain-specific)
 
 ---
 
-## 🗂️ โครงสร้างข้อความในรีโป (Repository Structure Guidelines)
+## Implementation Checklist
 
-### 1. โครงสร้างไดเรกทอรี
-
-```
-tran_overlay/
-├── src-tauri/                 # Rust backend
-│   ├── src/
-│   │   ├── main.rs           # Entry point
-│   │   ├── commands/         # Tauri commands
-│   │   │   ├── mod.rs
-│   │   │   ├── translation.rs
-│   │   │   ├── ocr.rs
-│   │   │   └── settings.rs
-│   │   ├── core/             # Core logic
-│   │   │   ├── mod.rs
-│   │   │   ├── ocr/
-│   │   │   │   ├── mod.rs
-│   │   │   │   ├── engine.rs
-│   │   │   │   └── tesseract.rs
-│   │   │   ├── translate/
-│   │   │   │   ├── mod.rs
-│   │   │   │   ├── service.rs
-│   │   │   │   └── providers/
-│   │   │   └── capture/
-│   │   │       ├── mod.rs
-│   │   │       └── screen.rs
-│   │   ├── overlay/          # Overlay management
-│   │   │   ├── mod.rs
-│   │   │   ├── window.rs
-│   │   │   └── renderer.rs
-│   │   ├── hotkeys/          # Hotkey handling
-│   │   │   ├── mod.rs
-│   │   │   └── manager.rs
-│   │   ├── settings/         # Settings persistence
-│   │   │   ├── mod.rs
-│   │   │   ├── config.rs
-│   │   │   └── storage.rs
-│   │   ├── utils/            # Utility functions
-│   │   │   ├── mod.rs
-│   │   │   ├── image.rs
-│   │   │   └── validation.rs
-│   │   └── types.rs          # Shared types
-│   ├── tests/               # Integration tests
-│   │   ├── integration_test.rs
-│   │   └── fixtures/
-│   ├── Cargo.toml
-│   └── tauri.conf.json
-├── src/                       # React frontend
-│   ├── components/           # Reusable components
-│   │   ├── ui/              # Base UI components
-│   │   │   ├── button.tsx
-│   │   │   ├── input.tsx
-│   │   │   └── modal.tsx
-│   │   ├── layout/          # Layout components
-│   │   │   ├── header.tsx
-│   │   │   └── sidebar.tsx
-│   │   ├── TranslationOverlay.tsx
-│   │   ├── SettingsPanel.tsx
-│   │   └── HistoryList.tsx
-│   ├── pages/               # Page components
-│   │   ├── settings/
-│   │   │   ├── index.tsx
-│   │   │   ├── general.tsx
-│   │   │   └── hotkeys.tsx
-│   │   ├── history/
-│   │   │   └── index.tsx
-│   │   └── home.tsx
-│   ├── hooks/               # Custom hooks
-│   │   ├── useTranslation.ts
-│   │   ├── useHotkeys.ts
-│   │   └── useSettings.ts
-│   ├── services/            # API services
-│   │   ├── translation.ts
-│   │   ├── ocr.ts
-│   │   └── settings.ts
-│   ├── store/               # State management
-│   │   ├── index.ts
-│   │   ├── translation.ts
-│   │   └── settings.ts
-│   ├── types/               # TypeScript types
-│   │   ├── index.ts
-│   │   ├── translation.ts
-│   │   └── settings.ts
-│   ├── utils/               # Utility functions
-│   │   ├── format.ts
-│   │   └── validation.ts
-│   ├── styles/              # Global styles
-│   │   ├── globals.css
-│   │   └── themes.css
-│   ├── App.tsx
-│   ├── main.tsx
-│   └── vite-env.d.ts
-├── docs/                     # Documentation
-│   ├── README.md
-│   ├── RULES.md
-│   ├── STYLEGUIDE.md
-│   ├── SPEC.md
-│   ├── ARCHITECTURE.md
-│   ├── ASSUMPTIONS.md
-│   ├── CHANGELOG.md
-│   ├── api/                 # API documentation
-│   │   ├── commands.md
-│   │   └── events.md
-│   └── guides/              # User guides
-│       ├── installation.md
-│       ├── usage.md
-│       └── troubleshooting.md
-├── scripts/                  # Build/utility scripts
-│   ├── build.sh
-│   ├── release.sh
-│   └── setup-dev.sh
-├── .github/                  # GitHub configuration
-│   ├── workflows/
-│   │   ├── ci.yml
-│   │   └── release.yml
-│   ├── ISSUE_TEMPLATE/
-│   │   ├── bug_report.md
-│   │   └── feature_request.md
-│   └── PULL_REQUEST_TEMPLATE.md
-├── tests/                    # E2E tests
-│   ├── e2e/
-│   │   ├── translation.spec.ts
-│   │   └── settings.spec.ts
-│   └── fixtures/
-├── .gitignore
-├── .env.example
-├── CHANGELOG.md
-├── LICENSE
-├── package.json
-├── README.md
-└── tsconfig.json
-```
-
-### 2. กฎการจัดไฟล์
-
-1. **ไฟล์ต้องมีความหมาย**: ชื่อไฟล์ต้องบอกได้ว่ามีเนื้อหาอะไร
-2. **หนึ่ง module ต่อหนึ่งไฟล์**: ยกเว้น simple types หรือ constants
-3. **ใช้ snake_case สำหรับ Rust ไฟล์**
-4. **ใช้ PascalCase สำหรับ React components**
-5. **ใช้ camelCase สำหรับ utility และ services**
-6. **index files**: ใช้สำหรับ re-export จาก module
-
----
-
-## 📊 มาตรฐานการเขียน PR Description
-
-### 1. รูปแบบ PR Template
-
-```markdown
-## Description
-Brief description of what this PR does.
-
-## Type of Change
-- [ ] Bug fix (non-breaking change which fixes an issue)
-- [ ] New feature (non-breaking change which adds functionality)
-- [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
-- [ ] Documentation update
-- [ ] Refactoring
-- [ ] Performance improvement
-
-## Related Issue
-Closes #(issue number)
-Related to #(issue number)
-
-## Changes Made
-- Change 1
-- Change 2
-- Change 3
-
-## Testing
-- [ ] Unit tests added/updated
-- [ ] Integration tests added/updated
-- [ ] Manually tested
-- [ ] Tested on Windows
-- [ ] Tested on macOS
-- [ ] Tested on Linux
-
-## Screenshots (if applicable)
-Include screenshots or GIFs showing the changes.
-
-## Checklist
-- [ ] My code follows the style guidelines of this project
-- [ ] I have performed a self-review of my own code
-- [ ] I have commented my code, particularly in hard-to-understand areas
-- [ ] I have made corresponding changes to the documentation
-- [ ] My changes generate no new warnings
-- [ ] I have added tests that prove my fix is effective or that my feature works
-- [ ] New and existing unit tests pass locally with my changes
-- [ ] Any dependent changes have been merged and published in downstream modules
-```
-
-### 2. ตัวอย่าง PR Description
-
-```markdown
-## Description
-Add support for custom hotkey configuration, allowing users to define their own keyboard shortcuts for triggering screenshot capture and closing overlays.
-
-## Type of Change
-- [x] New feature (non-breaking change which adds functionality)
-- [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
-- [ ] Documentation update
-
-## Related Issue
-Closes #34
-Related to #12
-
-## Changes Made
-- Added `hotkey-config` command to Tauri for saving/loading custom hotkeys
-- Created `HotkeyManager` struct to handle global hotkey registration
-- Added UI in Settings panel for hotkey configuration
-- Updated hotkey validation to prevent conflicts
-- Added hotkey conflict detection
-
-## Testing
-- [x] Unit tests added/updated (HotkeyManager tests)
-- [x] Integration tests added/updated (hotkey-config command tests)
-- [x] Manually tested
-- [x] Tested on Windows
-- [ ] Tested on macOS
-- [ ] Tested on Linux
-
-## Screenshots
-Before:
-[Old settings panel screenshot]
-
-After:
-[New hotkey configuration UI screenshot]
-
-## Checklist
-- [x] My code follows the style guidelines of this project
-- [x] I have performed a self-review of my own code
-- [x] I have commented my code, particularly in hard-to-understand areas
-- [x] I have made corresponding changes to the documentation (README.md, SETTINGS.md)
-- [x] My changes generate no new warnings
-- [x] I have added tests that prove my fix is effective or that my feature works
-- [x] New and existing unit tests pass locally with my changes
-- [x] Any dependent changes have been merged and published in downstream modules
-```
-
----
-
-## Definition of Done (DoD) - STYLEGUIDE.md
-
-ไฟล์ STYLEGUIDE.md จะถือว่าเสร็จสมบูรณ์เมื่อ:
-
-1. ✅ มีมาตรฐานการเขียนโค้ดที่ครอบคลุมทั้ง Rust และ Frontend
-2. ✅ มีตัวอย่างโค้ดที่เข้าใจง่ายประกอบทุกหัวข้อ
-3. ✅ มีแนวทางการเขียน commit message ที่ชัดเจน
-4. ✅ มีรูปแบบ release notes ที่ครบถ้วน
-5. ✅ มีโครงสร้างข้อความใน repo ที่ชัดเจน
-6. ✅ มี template สำหรับ PR description
-7. ✅ เขียนเป็นภาษาไทยที่ถูกต้องและเป็นทางการ
-8. ✅ มีตัวอย่างที่ใช้งานได้จริงในทุกหัวข้อ
-9. ✅ ไม่มีข้อขัดแย้งในแนวทาง
-10. ✅ ผ่านการตรวจสอบโดยทีมพัฒนา
-
----
-
-## Acceptance Criteria
-
-เกณฑ์การตรวจสอบคุณภาพ:
-
-1. **ความครบถ้วน**: มาตรฐานต้องครอบคลุมทุกแง่มุมของการพัฒนา
-2. **ความชัดเจน**: ผู้พัฒนาต้องเข้าใจและทำตามได้ทันที
-3. **ความสอดคล้อง**: มาตรฐานต้องสอดคล้องกันทั้งหมด
-4. **ความทันสมัย**: ต้องใช้ best practices ปัจจุบัน
-5. **ความเป็นตัวอย่างที่ดี**: ตัวอย่างโค้ดต้องถูกต้องและเป็นไปตามมาตรฐาน
-6. **ความยืดหยุ่น**: มาตรฐานต้องไม่เข้มงวดเกินไปจนยากต่อการทำตาม
-7. **ความเป็นมาตรฐาน**: ใช้รูปแบบและการจัดรูปแบบที่สอดคล้องกัน
-8. **ความน่าเชื่อถือ**: มาตรฐานทุกข้อต้องมีเหตุผลประกอบ
-9. **ความง่ายในการอ้างอิง**: สามารถค้นหาและอ้างอิงได้ง่าย
-10. **การตรวจสอบ**: ผ่านการตรวจสอบโดยทีมพัฒนาอย่างน้อย 2 คน
-
----
-
-**เวอร์ชัน**: 0.1.0  
-**อัปเดตล่าสุด**: 2024  
-**สถานะ**: ✅ เสร็จสมบูรณ์  
-**ผู้อนุมัติ**: Lead Developer
+For each new component:
+- [ ] Follows color system
+- [ ] Uses semantic typography
+- [ ] Proper spacing scale
+- [ ] Dark mode support
+- [ ] Accessible (ARIA labels, keyboard nav)
+- [ ] Responsive (if applicable)
+- [ ] Thai language support
+- [ ] Loading/error states
+- [ ] Hover/focus states
+- [ ] Animation (if needed)

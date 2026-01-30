@@ -1,0 +1,13 @@
+# Application Icons
+
+Place your application icons here:
+
+- icon.ico (Windows)
+- icon.icns (macOS)
+- icon.png (Linux, 16x16, 32x32, 64x64, 128x128, 256x256, 512x512)
+- iconTemplate.png (macOS template, monochrome)
+
+You can generate these using tools like:
+- https://cloudconvert.com/
+- https://www.icoconverter.com/
+- ImageMagick: `convert icon.png -define icon:auto-resize=256,128,96,64,48,32,16 icon.ico`
